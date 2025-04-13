@@ -41,7 +41,7 @@ import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView tvPNL,tvWorking;
+    private TextView tvUPPNL,tvDOWNPNL,tvWorking,tvTotal;
     private TrendDetector detector;
     private RealTimeBNBWatcher watcher;
     private Handler handler;
@@ -51,11 +51,12 @@ public class MainActivity extends AppCompatActivity {
     private Map<String, TrendDetector> trendDetectors = new HashMap<>();
     private String[] coinSymbols;
     private boolean isCoinSymbolsUpdated = false; // Flag to check if coinSymbols is updated
-    private double valueTime;
+    private double valueTime,accumulateUP, accumulateDOWN;
+    private long timeLong;
     private Button btStart,btLong,buttonClose;
     private Position myPosition;
-    private String availableBalance;
-    private EditText edAvailableBalance,edSymbol,edTimeLong,edTime;
+    private String strategy;
+    private EditText edSymbol,edTimeLong,edTime,edStrategy;
     private FutureTrade futureTrade;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,43 +70,50 @@ public class MainActivity extends AppCompatActivity {
         });
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+        accumulateDOWN = 0;
+        accumulateUP = 0;
         coinSymbols = null;
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         handler = new Handler();
         coinList = new ArrayList<>();
-
+        tvTotal = findViewById(R.id.tvPNLTOTAL);
         futureTrade = new FutureTrade();
         edSymbol = findViewById(R.id.edSymbol);
         adapter = new CoinPriceAdapter(coinList);
         recyclerView.setAdapter(adapter);
         btStart = findViewById(R.id.btStart);
         btLong = findViewById(R.id.btLong);
+        edStrategy  = findViewById(R.id.edStrategy);
         coinList = new ArrayList<>();
         adapter = new CoinPriceAdapter(coinList);
         recyclerView.setAdapter(adapter); // Gắn adapter sớm
         tvWorking = findViewById(R.id.tvWorking);
 
         edTime= findViewById(R.id.edTime);
-        edAvailableBalance = findViewById(R.id.edAvailableBalance);
+        //edAvailableBalance = findViewById(R.id.edAvailableBalance);
         valueTime = Integer.parseInt(String.valueOf(edTime.getText()));
-        availableBalance = String.valueOf(edAvailableBalance.getText());
-        davailableBalance = Double.parseDouble(availableBalance);
-        tvPNL = findViewById(R.id.tvPNL);
+        //availableBalance = String.valueOf(edAvailableBalance.getText());
+        //davailableBalance = Double.parseDouble(availableBalance);
+        tvUPPNL = findViewById(R.id.tvAccUPPNL);
+        tvDOWNPNL = findViewById(R.id.tvAccDOWNPNL);
+
+
         try {
             getAllCoin(futureTrade.client); // Gọi API để lấy danh sách coin
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-
+        //timeLong = Double.parseDouble(tvTimeLong.getText());
         btLong.setOnClickListener(v -> {
             if (!myPosition.isOpen && model.price != null) {
                 myPosition.entryPrice = futureTrade.choosenPrice;
                 myPosition.isOpen = true;
+
                 davailableBalance = davailableBalance - (myPosition.margin * myPosition.feeRate); // trừ phí
                 tvWorking.setText("Long Future");
-                tvPNL.setText("Entry: $ --"  +
+                tvDOWNPNL.setText("Entry: $ --"  +
                         "\nNow: $ --"  +
                         "\nPnL: $ --" +
                         "\nbalanceWithPnL: $ " + String.format("%.2f", davailableBalance) +
@@ -138,20 +146,24 @@ public class MainActivity extends AppCompatActivity {
             String iSymbol = String.valueOf(edSymbol.getText());
 
             edTimeLong = findViewById(R.id.edTimeLong);
+            timeLong = Long.parseLong(String.valueOf(edTimeLong.getText()));//.parseDouble());
             edTime= findViewById(R.id.edTime);
-            edAvailableBalance = findViewById(R.id.edAvailableBalance);
+            edStrategy = findViewById(R.id.edStrategy);
 
             valueTime = Integer.parseInt(String.valueOf(edTime.getText()));
-            availableBalance = String.valueOf(edAvailableBalance.getText());
-            davailableBalance = Double.parseDouble(availableBalance);
-            myPosition = new Position(Double.parseDouble(availableBalance),20,iSymbol);
+            strategy = String.valueOf(edStrategy.getText());
+            //davailableBalance = Double.parseDouble(availableBalance);
+            myPosition = new Position(Double.parseDouble("0"),20,iSymbol);
             futureTrade.getCurrentPrice(myPosition.symbol);
+
+
             StartApp();
         });
     }
 
     private double davailableBalance;
     private CoinPriceModel model;
+    //private Position p;
     private void StartApp() {
 
 
@@ -172,14 +184,14 @@ public class MainActivity extends AppCompatActivity {
                     for (int i = 0; i < coinSymbols.length; i++) {
                         final int position = i;
                         String symbol = coinSymbols[i];
-
+                       // Position p = new Position();
+                        Position p = new Position(5,20,symbol);
                         CoinPriceModel model = new CoinPriceModel(symbol.toUpperCase(), "Loading...", "Đợi trend...", "0.0%");
                         this.model = model;
 
                         coinList.add(model);
 
                         TrendDetector detector = new TrendDetector(valueTime, new TrendDetector.TrendListener() {
-
                             @Override
                             public void onUpdateCount(int count,int countAm) {
                                 runOnUiThread(() -> {
@@ -189,14 +201,44 @@ public class MainActivity extends AppCompatActivity {
                                 });
                             }
                             @Override
-                            public void onTrendStarted(String type) {
+                            public void onTrendStarted(String type, double price) {
                                 handler.post(() -> {
                                     model.trendStatus = "📈 Bắt đầu trend: " + type;
-                                    adapter.notifyItemChanged(position);
-                                    //  model.priceUpdateCount = 0;
-                                    model.isInTrend = true; // 👉 coin này đang trend
-                                    sortAndRefreshList();
 
+                                    p.type = type;
+
+                                    p.entryPrice = price;
+                                    p.isOpen = true;
+                                    model.entry = "Entry: $ --";
+                                    model.now = "";
+                                    model.pnl = "";
+
+                                    new CountDownTimer(timeLong, 1000) {
+                                        public void onTick(long millisUntilFinished) {
+                                            if(strategy.equals("NORMAL")) {
+                                                model.isWorking = type + " Long Future (" + millisUntilFinished / 1000 + "s)";
+                                            }else{
+                                                if(type.equals("UP")){
+                                                    model.isWorking = "DOWN Long Future (" + millisUntilFinished / 1000 + "s)";
+                                                }else{
+                                                    model.isWorking = "UP Long Future (" + millisUntilFinished / 1000 + "s)";
+                                                }
+                                            }
+                                        }
+
+                                        public void onFinish() {
+                                            // 👇 Tự đóng lệnh sau timeLong s
+                                            if (p.isOpen) {
+                                                p.isOpen = false;
+                                                //tvWorking.setText("Stop");
+                                                model.isWorking = "Stop";
+                                            }
+                                        }
+                                    }.start();
+
+                                    sortAndRefreshList();
+                                    adapter.notifyItemChanged(position);
+                                    model.isInTrend = true;
                                 });
                             }
 
@@ -219,18 +261,89 @@ public class MainActivity extends AppCompatActivity {
                                     model.trendStatus = "✅ Trend " + type + ": " + durationSeconds + "s";
                                     model.percentChange = String.format("%.2f%%", percentChange);
                                     adapter.notifyItemChanged(position);
-                                    //  model.priceUpdateCount = 0;
-                                    model.isInTrend = false; // 👉 kết thúc trend
-                                    sortAndRefreshList();
-
                                 });
                             }
 
                             @Override
                             public void onNewPrice(double price) {
                                 handler.post(() -> {
-                                    model.price = String.valueOf(price);
+                                    //model.price = String.format("%.5f", price);
                                     adapter.notifyItemChanged(position);
+
+                                    if(p.isOpen) {
+                                        if(strategy.equals("NORMAL")) {
+                                            if (p.type.equals("UP")) {
+                                                // Long future
+                                                double ientry = p.entryPrice;
+                                                double icurrent = Double.parseDouble(model.price);
+                                                //futureTrade.choosenPrice = price;
+                                                double ipnl = (price - p.entryPrice) * p.leverage * (p.margin / p.entryPrice);
+                                                double totalFee = p.margin * p.leverage * p.feeRate * 2;
+                                                double realizedPnL = ipnl - totalFee;
+
+                                                double ibalanceWithPnL = p.margin + ipnl;
+                                                //davailableBalance = balanceWithPnL;
+                                                double iquantity = (p.margin * p.leverage) / ientry;
+
+                                                model.entry = "Entry: $ " + String.format("%.5f", ientry);
+                                                model.now = "\nNow: $ " + String.format("%.5f", icurrent);
+                                                model.pnl = "\nPnL: $ " + String.format("%.5f", realizedPnL) + " - Tax: " + String.format("%.5f", totalFee);
+                                                accumulateUP = accumulateUP + realizedPnL;
+                                                tvUPPNL.setText("UP: " + String.valueOf(accumulateUP));
+                                            } else if (p.type.equals("DOWN")) {
+                                                // short future
+                                                double ientry = p.entryPrice;
+                                                double icurrent = Double.parseDouble(model.price);
+
+                                                double ipnl = (ientry - icurrent) * p.leverage * (p.margin / ientry);
+                                                double totalFee = p.margin * p.leverage * p.feeRate * 2;
+                                                double realizedPnL = ipnl - totalFee;
+                                                double iquantity = (p.margin * p.leverage) / ientry;
+                                                accumulateDOWN = accumulateDOWN + realizedPnL;
+                                                tvDOWNPNL.setText("DOWN: " + String.valueOf(accumulateDOWN));
+                                                model.entry = "Entry: $ " + String.format("%.5f", ientry);
+                                                model.now = "\nNow: $ " + String.format("%.5f", icurrent);
+                                                model.pnl = "\nPnL: $ " + String.format("%.5f", realizedPnL) + " - Fee: " + String.format("%.5f", totalFee);
+                                            }
+                                        }else {
+                                            if (p.type.equals("DOWN")) {
+                                                // Long future
+                                                double ientry = p.entryPrice;
+                                                double icurrent = Double.parseDouble(model.price);
+                                                //futureTrade.choosenPrice = price;
+                                                double ipnl = (price - p.entryPrice) * p.leverage * (p.margin / p.entryPrice);
+                                                double totalFee = p.margin * p.leverage * p.feeRate * 2;
+                                                double realizedPnL = ipnl - totalFee;
+
+                                                double ibalanceWithPnL = p.margin + ipnl;
+                                                //davailableBalance = balanceWithPnL;
+                                                double iquantity = (p.margin * p.leverage) / ientry;
+
+                                                model.entry = "Entry: $ " + String.format("%.5f", ientry);
+                                                model.now = "\nNow: $ " + String.format("%.5f", icurrent);
+                                                model.pnl = "\nPnL: $ " + String.format("%.5f", realizedPnL) + " - Tax: " + String.format("%.5f", totalFee);
+                                                accumulateUP = accumulateUP + realizedPnL;
+                                                tvUPPNL.setText("UP: " + String.valueOf(accumulateUP));
+                                            } else if (p.type.equals("UP")) {
+                                                // short future
+                                                double ientry = p.entryPrice;
+                                                double icurrent = Double.parseDouble(model.price);
+
+                                                double ipnl = (ientry - icurrent) * p.leverage * (p.margin / ientry);
+                                                double totalFee = p.margin * p.leverage * p.feeRate * 2;
+                                                double realizedPnL = ipnl - totalFee;
+                                                double iquantity = (p.margin * p.leverage) / ientry;
+                                                accumulateDOWN = accumulateDOWN + realizedPnL;
+                                                tvDOWNPNL.setText("DOWN: " + String.valueOf(accumulateDOWN));
+                                                model.entry = "Entry: $ " + String.format("%.5f", ientry);
+                                                model.now = "\nNow: $ " + String.format("%.5f", icurrent);
+                                                model.pnl = "\nPnL: $ " + String.format("%.5f", realizedPnL) + " - Fee: " + String.format("%.5f", totalFee);
+                                            }
+                                        }
+                                        double total = accumulateDOWN + accumulateUP;
+                                        tvTotal.setText("TOTAL: "+total);
+                                    }
+
 
                                     // 👇 Chỉ tính PnL nếu đang long đúng coin này
                                     if (myPosition.isOpen && model.symbol.equals(myPosition.symbol)) {
@@ -240,9 +353,14 @@ public class MainActivity extends AppCompatActivity {
                                         futureTrade.choosenPrice = price;
                                         double pnl = (price - myPosition.entryPrice) * myPosition.leverage * (myPosition.margin / myPosition.entryPrice);
                                         double balanceWithPnL = myPosition.margin + pnl;
-                                        davailableBalance = balanceWithPnL;
+
+                                        //double ipnl = (price - p.entryPrice) * p.leverage * (p.margin / p.entryPrice);
+                                        //double totalFee = p.margin * p.leverage * p.feeRate * 2;
+                                        //double realizedPnL = ipnl - totalFee;
+
+                                       // davailableBalance = balanceWithPnL;
                                         double quantity = (myPosition.margin * myPosition.leverage) / entry;
-                                        tvPNL.setText("Entry: $ " + String.format("%.2f", entry) +
+                                        tvDOWNPNL.setText("Entry: $ " + String.format("%.2f", entry) +
                                                 "\nNow: $ " + String.format("%.2f", current) +
                                                 "\nPnL: $ " + String.format("%.2f", pnl) +
                                                 "\nbalanceWithPnL: $ " + String.format("%.2f", balanceWithPnL) +

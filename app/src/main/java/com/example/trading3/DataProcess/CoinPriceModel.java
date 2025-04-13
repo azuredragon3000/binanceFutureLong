@@ -1,11 +1,15 @@
 package com.example.trading3.DataProcess;
 
+import android.os.CountDownTimer;
+
+import com.example.trading3.Position;
+
 public class CoinPriceModel {
     public String symbol;
     public String price;
     public String trendStatus;
     //public boolean isInTrend; // Thêm thuộc tính này để xác định coin có trong xu hướng hay không
-    public String percentChange;
+    public String percentChange,entry,now,pnl,isWorking;
     public int priceUpdateCount; // 👈 mới
     public int priceUpdateCountAm; // 👈 mới
 
@@ -23,6 +27,8 @@ public class CoinPriceModel {
         this.priceUpdateCountAm = 0;
 
     }
+
+
 }
 
 

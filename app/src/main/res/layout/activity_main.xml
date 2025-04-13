@@ -6,16 +6,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <HorizontalScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true"
-        android:scrollbars="horizontal">
 
 
         <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <LinearLayout
@@ -47,21 +42,20 @@
                     />
 
                 <TextView
-                    android:id="@+id/tvAvailableBalance"
+                    android:id="@+id/tvStrategy"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
-                    android:text="Avai Balance: "
+                    android:text="Strategy: "
                     android:textSize="20sp"
                     />
                 <EditText
-                    android:id="@+id/edAvailableBalance"
+                    android:id="@+id/edStrategy"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="5"
+                    android:text="NORMAL"
                     android:textSize="20sp"
                     />
-
 
             </LinearLayout>
 
@@ -111,7 +105,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
-                        android:text="5"
+                        android:text="10000"
                         android:textSize="20sp"
                     />
             </LinearLayout>
@@ -124,23 +118,43 @@
                 android:textSize="20sp"
                 />
 
-
-
             <TextView
-                android:id="@+id/tvPNL"
+                android:id="@+id/tvAccUPPNL"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="PNL: Not Available"
+                android:text=""
                 android:layout_marginStart="20dp"
                 android:textSize="20sp"
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="10dp"
                 />
+            <TextView
+                android:id="@+id/tvAccDOWNPNL"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:layout_marginStart="20dp"
+                android:textSize="20sp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                />
+            <TextView
+                android:id="@+id/tvPNLTOTAL"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:layout_marginStart="20dp"
+                android:textSize="20sp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                />
+        </LinearLayout>
 
-
-
-
-
+    <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:scrollbars="horizontal">
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerView"
                 android:layout_width="wrap_content"
@@ -148,7 +162,6 @@
                 android:scrollbars="vertical"/>
 
 
-        </LinearLayout>
     </HorizontalScrollView>
 
 </LinearLayout>

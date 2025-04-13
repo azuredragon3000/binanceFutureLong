@@ -42,6 +42,10 @@ public class CoinPriceAdapter extends RecyclerView.Adapter<CoinPriceAdapter.Coin
         holder.tvUpdateCountAm.setText("-"+String.valueOf(model.priceUpdateCountAm));
         holder.tvTrendProgress.setText(model.trendProgress); // 👈 mới
 
+        holder.tvEntry.setText(model.entry);
+        holder.tvNow.setText(model.now);
+        holder.tvIsWorking.setText(model.isWorking);
+        holder.tvLongPNL.setText(model.pnl);
         // Đổi màu % thay đổi nếu muốn
         try {
             double percent = Double.parseDouble(model.percentChange.replace("%", ""));
@@ -64,7 +68,7 @@ public class CoinPriceAdapter extends RecyclerView.Adapter<CoinPriceAdapter.Coin
     }
 
     public static class CoinViewHolder extends RecyclerView.ViewHolder {
-        TextView tvIndex, tvSymbol, tvPrice, tvChange, tvTrend,tvUpdateCount,tvTrendProgress,tvUpdateCountAm;
+        TextView tvIndex, tvSymbol, tvPrice, tvChange, tvTrend,tvUpdateCount,tvTrendProgress,tvUpdateCountAm,tvEntry,tvLongPNL,tvNow,tvIsWorking;
 
         public CoinViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -75,12 +79,11 @@ public class CoinPriceAdapter extends RecyclerView.Adapter<CoinPriceAdapter.Coin
             tvTrend = itemView.findViewById(R.id.tvTrend);
             tvUpdateCount = itemView.findViewById(R.id.tvUpdateCount); // 👈 mới
             tvUpdateCountAm = itemView.findViewById(R.id.tvUpdateCountAm); // 👈 mới
-
             tvTrendProgress = itemView.findViewById(R.id.tvTrendProgress);
-
+            tvEntry = itemView.findViewById(R.id.tvEntry);
+            tvLongPNL = itemView.findViewById(R.id.tvLongPNL);
+            tvNow = itemView.findViewById(R.id.tvNow);
+            tvIsWorking = itemView.findViewById(R.id.tvIsWorking);
         }
     }
-
-
-
 }

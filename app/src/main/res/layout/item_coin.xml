@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="8dp"
-    android:background="#F9F9F9">
+    android:background="@drawable/border_background">
 
     <TextView
         android:id="@+id/tvIndex"
@@ -81,4 +81,41 @@
         android:text="📈 Đang tăng"
         android:textSize="14sp"
         android:textColor="#000000"/>
+
+    <TextView
+        android:id="@+id/tvIsWorking"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Stop"
+        android:textSize="14sp"
+        android:textColor="#000000"/>
+
+    <TextView
+        android:id="@+id/tvLongPNL"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Long PNL"
+        android:textSize="14sp"
+        android:textColor="#000000"/>
+
+    <TextView
+        android:id="@+id/tvEntry"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Entry Price"
+        android:textSize="14sp"
+        android:textColor="#000000"/>
+
+    <TextView
+        android:id="@+id/tvNow"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Price Now"
+        android:textSize="14sp"
+        android:textColor="#000000"/>
+
 </LinearLayout>

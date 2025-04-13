@@ -8,7 +8,7 @@ public class TrendDetector {
 
 
     public interface TrendListener {
-        void onTrendStarted(String type);
+        void onTrendStarted(String type,double price);
         void onTrendEnded(String type, double durationSeconds, double percentChange);
         void onNewPrice(double price);
         void onUpdateCount(int count,int countAm);
@@ -87,14 +87,14 @@ public class TrendDetector {
                         trendStartPrice = priceWindow.getFirst();
                         //updateCounter = 0;
                         //cumulativeDelta = 0;
-                        listener.onTrendStarted("UP");
+                        listener.onTrendStarted("UP",price);
                     } else if (isStrictlyDecreasing(priceWindow)) {
                         state = State.MEASURING_DOWN;
                         trendStartTime = System.currentTimeMillis();
                         trendStartPrice = priceWindow.getFirst();
                         //updateCounter = 0;
                         //cumulativeDelta = 0;
-                        listener.onTrendStarted("DOWN");
+                        listener.onTrendStarted("DOWN",price);
                     }
                 }
 
